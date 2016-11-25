@@ -55,7 +55,8 @@ discord_bot.on('ready', function(event) {
 });
 
 discord_bot.on('message', function(user, userID, channelID, message, event) {
-    if (userID == discord_bot.id && channelID != nconf.get("discord_channel_id")) return;
+    if (userID == discord_bot.id) return;
+    if (channelID != nconf.get("discord_channel_id")) return;
 
     SendIrcMessage(util.format("<%s> %s", user, message));
 });
