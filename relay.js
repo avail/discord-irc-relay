@@ -58,7 +58,9 @@ discord_bot.on('message', function(user, userID, channelID, message, event) {
     if (userID == discord_bot.id) return;
     if (channelID != nconf.get("discord_channel_id")) return;
 
-    SendIrcMessage(util.format("<%s> %s", user, message));
+    var nickname = discord_bot.servers[nconf.get("discord_server_id")].members[userID].nick;
+
+    SendIrcMessage(util.format("<%s> %s", (nickname ? nickname : user), message));
 });
 
 /*** IRC SETUP ***/
