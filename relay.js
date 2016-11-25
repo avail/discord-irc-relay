@@ -19,12 +19,12 @@ nconf.argv().env().file('config.json').defaults({
 });
 
 const discord_bot = new Discord.Client({
-    token: settings["discord_token"],
+    token: nconf.get("discord_token"),
     autorun: true
 });
 
-const irc_bot = new Irc.Client(settings["irc_server"], settings["irc_nick"], {
-    userName: settings["irc_nick"],
+const irc_bot = new Irc.Client(nconf.get("irc_server"), nconf.get("irc_nick"), {
+    userName: nconf.get("irc_nick"),
     realName: "avail's IRC<->Discord relay",
     encoding: "utf-8",
     autoConnect: false
@@ -37,14 +37,14 @@ function SendIrcMessage(message) {
     if (connected["irc"] != true) return;
 
     logger.info("[IRC] Sending message: %s", message);
-    irc_bot.say(settings["irc_channel"], message);
+    irc_bot.say(nconf.get("irc_channel"), message);
 }
 
 function SendDiscordMessage(message) {
     if (connected["discord"] != true) return;
 
     logger.info("[Discord] Sending message: %s", message);
-    discord_bot.sendMessage({to: settings["discord_channel_id"], message: message});
+    discord_bot.sendMessage({to: nconf.get("discord_channel_id"), message: message});
 }
 
 /*** DISCORD SETUP ***/
@@ -55,7 +55,7 @@ discord_bot.on('ready', function(event) {
 });
 
 discord_bot.on('message', function(user, userID, channelID, message, event) {
-    if (userID == discord_bot.id && channelID != settings["discord_channel_id"]) return;
+    if (userID == discord_bot.id && channelID != nconf.get("discord_channel_id")) return;
 
     SendIrcMessage(util.format("<%s> %s", user, message));
 });
@@ -71,14 +71,14 @@ irc_bot.addListener("message", function(from, to, message) {
 
 irc_bot.connect(0, function(reply) {
     // auth us
-    irc_bot.say("NickServ", util.format("IDENTIFY %s", settings["irc_nickserv"]));
+    irc_bot.say("NickServ", util.format("IDENTIFY %s", nconf.get("irc_nickserv")));
 
     // hostname
-    irc_bot.say("HostServ", (settings["irc_hostserv"] ? "on" : "off")); // lol
+    irc_bot.say("HostServ", (nconf.get("irc_hostserv") ? "on" : "off")); // lol
 
     logger.info("[IRC] Logged in as %s", irc_bot.nick);
 
-    irc_bot.join(settings["irc_channel"]);
+    irc_bot.join(nconf.get("irc_channel"));
 
     connected["irc"] = true;
 });
