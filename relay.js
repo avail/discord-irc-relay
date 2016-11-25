@@ -3,11 +3,14 @@ const logger = log4js.getLogger();
 
 const util = require("util");
 const nconf = require('nconf');
+const args = require('minimist')(process.argv.slice(2));
 
 const Discord = require('discord.io');
 const Irc = require("irc");
 
-nconf.argv().env().file('config.json').defaults({
+var cfg_file = (args["config"] ? args["config"] : "config.json");
+
+nconf.argv().env().file(cfg_file).defaults({
     "discord_channel_id": "",
     "discord_token": "",
 
