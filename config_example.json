@@ -1,0 +1,10 @@
+{
+    "discord_channel_id": "0123412123161",
+    "discord_token": "1337bottoken",
+
+    "irc_server": "irc.myawesome.net",
+    "irc_nick": "coolnick",
+    "irc_nickserv": "coolpass",
+    "irc_hostserv": false,
+    "irc_channel": "#awesomechan"
+}
