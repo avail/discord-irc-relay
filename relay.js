@@ -50,6 +50,21 @@ function SendDiscordMessage(message) {
     discord_bot.sendMessage({to: nconf.get("discord_channel_id"), message: message});
 }
 
+function MessageClean(message) {
+
+    // contains a discord highlight, convert to nick
+    if (message.indexOf("<@") > -1) {
+
+        var id = message.substring(message.indexOf("<@") + 2, message.indexOf("<@") + 20);
+        var user = discord_bot.servers[nconf.get("discord_server_id")].members[id].username;
+        var nickname = discord_bot.servers[nconf.get("discord_server_id")].members[id].nick;
+
+        message = message.replace(util.format("<@%s>", id), util.format("@%s", (nickname ? nickname : user)));
+    }
+
+    return message;
+}
+
 /*** DISCORD SETUP ***/
 discord_bot.on('ready', function(event) {
     logger.info("[Discord] Logged in as %s", discord_bot.username);
@@ -63,6 +78,7 @@ discord_bot.on('message', function(user, userID, channelID, message, event) {
 
     var nickname = discord_bot.servers[nconf.get("discord_server_id")].members[userID].nick;
 
+    message = MessageClean(message);
     SendIrcMessage(util.format("<%s> %s", (nickname ? nickname : user), message));
 });
 
