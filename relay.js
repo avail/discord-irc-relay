@@ -131,6 +131,11 @@ irc_bot.addListener("message", function(from, to, message) {
     SendDiscordMessage(util.format("**<%s>** %s", from, message));
 });
 
+irc_bot.addListener("action", function(from, to, text, message) {
+    message = MessageCleanIrc(text);
+    SendDiscordMessage(util.format("_**%s** %s_", from, text));
+});
+
 irc_bot.connect(0, function(reply) {
     // auth us
     irc_bot.say("NickServ", util.format("IDENTIFY %s", nconf.get("irc_nickserv")));
