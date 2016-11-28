@@ -4,6 +4,7 @@ const logger = log4js.getLogger();
 const util = require("util");
 const nconf = require('nconf');
 const args = require('minimist')(process.argv.slice(2));
+const irc_colors = require('irc-colors');
 
 const Discord = require('discord.io');
 const Irc = require("irc");
@@ -50,8 +51,14 @@ function SendDiscordMessage(message) {
     discord_bot.sendMessage({to: nconf.get("discord_channel_id"), message: message});
 }
 
-function MessageClean(message) {
+function MessageCleanIrc(message) {
+    // strip irc colour codes
+    message = irc_colors.stripColorsAndStyle(message);
 
+    return message;
+}
+
+function MessageCleanDiscord(message) {
     // contains a discord highlight, convert to nick
     if (message.indexOf("<@") > -1) {
 
@@ -78,7 +85,7 @@ discord_bot.on('message', function(user, userID, channelID, message, event) {
 
     var nickname = discord_bot.servers[nconf.get("discord_server_id")].members[userID].nick;
 
-    message = MessageClean(message);
+    message = MessageCleanDiscord(message);
     SendIrcMessage(util.format("<%s> %s", (nickname ? nickname : user), message));
 });
 
@@ -88,6 +95,7 @@ irc_bot.addListener("error", function(message) {
 });
 
 irc_bot.addListener("message", function(from, to, message) {
+    message = MessageCleanIrc(message);
     SendDiscordMessage(util.format("**<%s>** %s", from, message));
 });
 
