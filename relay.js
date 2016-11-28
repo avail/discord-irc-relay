@@ -37,6 +37,28 @@ const irc_bot = new Irc.Client(nconf.get("irc_server"), nconf.get("irc_nick"), {
 var connected = { "discord": false, "irc": false };
 
 /*** MESSAGE FUNCS ***/
+// taken from http://stackoverflow.com/a/14919494
+function HumanFileSize(bytes, si) {
+    var thresh = si ? 1000 : 1024;
+
+    if(Math.abs(bytes) < thresh) {
+        return bytes + ' B';
+    }
+
+    var units = si
+        ? ['kB','MB','GB','TB','PB','EB','ZB','YB']
+        : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
+
+    var u = -1;
+
+    do {
+        bytes /= thresh;
+        ++u;
+    } while(Math.abs(bytes) >= thresh && u < units.length - 1);
+
+    return bytes.toFixed(1) + " " + units[u];
+}
+
 function SendIrcMessage(message) {
     if (connected["irc"] != true) return;
 
@@ -58,7 +80,7 @@ function MessageCleanIrc(message) {
     return message;
 }
 
-function MessageCleanDiscord(message) {
+function MessageCleanDiscord(message, event) {
     // contains a discord highlight, convert to nick
     if (message.indexOf("<@") > -1) {
 
@@ -67,6 +89,16 @@ function MessageCleanDiscord(message) {
         var nickname = discord_bot.servers[nconf.get("discord_server_id")].members[id].nick;
 
         message = message.replace(util.format("<@%s>", id), util.format("@%s", (nickname ? nickname : user)));
+    }
+
+    if (message == "") {
+        var attachment = event["d"]["attachments"][0];
+
+        if (attachment["width"] != null) { // assume image
+            message = util.format("%s; Width: %s, Height: %s, Size: %s, Url: %s", attachment["filename"], attachment["width"] + "px", attachment["height"] + "px", HumanFileSize(attachment["size"]), attachment["url"]);
+        } else { // probably file
+            message = util.format("%s; Size: %s, Url: %s", attachment["filename"], HumanFileSize(attachment["size"]), attachment["url"]);
+        }
     }
 
     return message;
@@ -85,7 +117,7 @@ discord_bot.on('message', function(user, userID, channelID, message, event) {
 
     var nickname = discord_bot.servers[nconf.get("discord_server_id")].members[userID].nick;
 
-    message = MessageCleanDiscord(message);
+    message = MessageCleanDiscord(message, event);
     SendIrcMessage(util.format("<%s> %s", (nickname ? nickname : user), message));
 });
 
