@@ -77,6 +77,29 @@ function MessageCleanIrc(message) {
     // strip irc colour codes
     message = irc_colors.stripColorsAndStyle(message);
 
+    // highlight users on discord by @username
+    var matches = message.match(/@[^\s]+/g);
+
+    if (matches) {
+        for (var match of matches) {
+            match_ = match.substring(1, match.length).toLowerCase();
+
+            for (var user in discord_bot.servers[nconf.get("discord_server_id")].members) {
+                var id = user;
+                var nickname = discord_bot.servers[nconf.get("discord_server_id")].members[user].nick;
+                var username = discord_bot.users[id].username;
+
+                if (username.toLowerCase() == match_) {
+                    message = message.replace(match, util.format("<@%s>", id));
+                }
+
+                if (nickname && nickname.toLowerCase() == match_) {
+                    message = message.replace(match, util.format("<@!%s>", id));
+                }
+            }
+        }
+    }
+
     return message;
 }
 
