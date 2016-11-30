@@ -83,12 +83,13 @@ function MessageCleanIrc(message) {
 function MessageCleanDiscord(message, event) {
     // contains a discord highlight, convert to nick
     if (message.indexOf("<@") > -1) {
+        var is_hl = message.indexOf("<@!") > -1;
 
-        var id = message.substring(message.indexOf("<@") + 2, message.indexOf("<@") + 20);
-        var user = discord_bot.servers[nconf.get("discord_server_id")].members[id].username;
+        var id = message.substring(message.indexOf("<@") + (is_hl ? 3 : 2), message.indexOf("<@") + (is_hl ? 21 : 20));
         var nickname = discord_bot.servers[nconf.get("discord_server_id")].members[id].nick;
+        var user = discord_bot.servers[nconf.get("discord_server_id")].members[id].username;
 
-        message = message.replace(util.format("<@%s>", id), util.format("@%s", (nickname ? nickname : user)));
+        message = message.replace(util.format("<@%s>", (is_hl ? "!" + id : id)), util.format("@%s", (nickname ? nickname : user)));
     }
 
     if (message == "") {
