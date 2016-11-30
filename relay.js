@@ -121,9 +121,33 @@ discord_bot.on('message', function(user, userID, channelID, message, event) {
     SendIrcMessage(util.format("<%s> %s", (nickname ? nickname : user), message));
 });
 
+discord_bot.on("disconnect", function(errmsg, code) {
+    logger.debug("discord died: %s", errmsg);
+    logger.info("[Discord] Reconnecting...");
+    discord_bot.connect();
+});
+
 /*** IRC SETUP ***/
+function ConnectIrc() {
+    irc_bot.connect(0, function(reply) {
+        // auth us
+        irc_bot.say("NickServ", util.format("IDENTIFY %s", nconf.get("irc_nickserv")));
+
+        // hostname
+        irc_bot.say("HostServ", (nconf.get("irc_hostserv") ? "on" : "off")); // lol
+
+        logger.info("[IRC] Logged in as %s", irc_bot.nick);
+
+        irc_bot.join(nconf.get("irc_channel"));
+
+        connected["irc"] = true;
+    });
+}
+
 irc_bot.addListener("error", function(message) {
-    logger.error("irc died: ", message);
+    logger.debug("irc died: ", message);
+    logger.info("[IRC] Reconnecting...");
+    ConnectIrc();
 });
 
 irc_bot.addListener("message", function(from, to, message) {
@@ -136,16 +160,6 @@ irc_bot.addListener("action", function(from, to, text, message) {
     SendDiscordMessage(util.format("_**%s** %s_", from, text));
 });
 
-irc_bot.connect(0, function(reply) {
-    // auth us
-    irc_bot.say("NickServ", util.format("IDENTIFY %s", nconf.get("irc_nickserv")));
+// connect irc on first run
+ConnectIrc();
 
-    // hostname
-    irc_bot.say("HostServ", (nconf.get("irc_hostserv") ? "on" : "off")); // lol
-
-    logger.info("[IRC] Logged in as %s", irc_bot.nick);
-
-    irc_bot.join(nconf.get("irc_channel"));
-
-    connected["irc"] = true;
-});
