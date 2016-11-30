@@ -2,11 +2,11 @@ const log4js = require("log4js");
 const logger = log4js.getLogger();
 
 const util = require("util");
-const nconf = require('nconf');
-const args = require('minimist')(process.argv.slice(2));
-const irc_colors = require('irc-colors');
+const nconf = require("nconf");
+const args = require("minimist")(process.argv.slice(2));
+const irc_colors = require("irc-colors");
 
-const Discord = require('discord.io');
+const Discord = require("discord.io");
 const Irc = require("irc");
 
 var cfg_file = (args["config"] ? args["config"] : "config.json");
@@ -105,13 +105,13 @@ function MessageCleanDiscord(message, event) {
 }
 
 /*** DISCORD SETUP ***/
-discord_bot.on('ready', function(event) {
+discord_bot.on("ready", function(event) {
     logger.info("[Discord] Logged in as %s", discord_bot.username);
 
     connected["discord"] = true;
 });
 
-discord_bot.on('message', function(user, userID, channelID, message, event) {
+discord_bot.on("message", function(user, userID, channelID, message, event) {
     if (userID == discord_bot.id) return;
     if (channelID != nconf.get("discord_channel_id")) return;
 
