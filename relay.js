@@ -184,6 +184,14 @@ irc_bot.addListener("action", function(from, to, text, message) {
     SendDiscordMessage(util.format("_**%s** %s_", from, text));
 });
 
+irc_bot.addListener("join", function(channel, nick, message) {
+	SendDiscordMessage(util.format("_**%s** joined the channel_", nick));
+});
+
+irc_bot.addListener("part", function(channel, nick, reason, message) {
+	SendDiscordMessage(util.format("_**%s** left the channel(**%s**)_", nick, reason));
+});
+
 // connect irc on first run
 ConnectIrc();
 
